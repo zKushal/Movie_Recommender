@@ -220,7 +220,7 @@ st.markdown("""
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("notebook/movies_cleaned.csv")
+    df = pd.read_csv("data/movies_cleaned.csv")
     df["tagline"] = df["tagline"].fillna("")
     df["overview"] = df["overview"].fillna("")
     for col in ["genres","keywords","cast","director"]:
