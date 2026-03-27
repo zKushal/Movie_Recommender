@@ -227,7 +227,6 @@ def load_data():
         df[col] = df[col].apply(lambda x: ast.literal_eval(x) if isinstance(x,str) else x)
     return df
 
-@st.cache_data
 def build_model(df):
     sw    = set(stopwords.words("english"))
     noise = ["duringcreditsstinger","aftercreditsstinger"]
@@ -394,37 +393,38 @@ if (go or sel) and sel:
 
         # Always show the styled table
         st.subheader("📊 Recommendation Insights")
+        def style_table(df):
+            def gradient_recommendation(val):
+                # Gradient: Highly Recommended (green) > Recommended (yellow) > Average (orange) > Not Recommended (red)
+                if val == "Highly Recommended":
+                    return "background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); color: #232336; font-weight: bold;"
+                elif val == "Recommended":
+                    return "background: linear-gradient(90deg, #fceabb 0%, #f8b500 100%); color: #232336; font-weight: bold;"
+                elif val == "Average":
+                    return "background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%); color: #232336; font-weight: bold;"
+                else:
+                    return "background: linear-gradient(90deg, #f85032 0%, #e73827 100%); color: #fff; font-weight: bold;"
+
+            styled_df = df.style \
+                .background_gradient(subset=["Rating"], cmap="YlGnBu") \
+                .background_gradient(subset=["Year"], cmap="Oranges") \
+                .background_gradient(subset=["Similarity"], cmap="Purples") \
+                .background_gradient(subset=["Score"], cmap="Blues") \
+                .bar(subset=["Rating"], color="#00b894") \
+                .bar(subset=["Year"], color="#fdcb6e") \
+                .bar(subset=["Similarity"], color="#7c4dff") \
+                .bar(subset=["Score"], color="#448aff") \
+                .applymap(gradient_recommendation, subset=["Recommendation"]) \
+                .format({
+                    "Similarity": "{:.3f}",
+                    "Score": "{:.3f}",
+                    "Rating": "{:.1f}"
+                })
+            return styled_df
+
         st.dataframe(
             style_table(display),
             use_container_width=True,
             hide_index=False
         )
-
-        
-def style_table(df):
-
-    def color_recommendation(val):
-        if val == "Highly Recommended":
-            return "background-color: #00c853; color: white; font-weight: bold;"
-        elif val == "Recommended":
-            return "background-color: #2962ff; color: white;"
-        elif val == "Average":
-            return "background-color: #ff9100; color: white;"
-        else:
-            return "background-color: #d50000; color: white;"
-
-    styled_df = df.style \
-        .background_gradient(subset=["Similarity"], cmap="Purples") \
-        .background_gradient(subset=["Score"], cmap="Blues") \
-        .bar(subset=["Similarity"], color="#7c4dff") \
-        .bar(subset=["Score"], color="#448aff") \
-        .applymap(color_recommendation, subset=["Recommendation"]) \
-        .format({
-            "Similarity": "{:.3f}",
-            "Score": "{:.3f}",
-            "Rating": "{:.1f}"
-        })
-
-    return styled_df
-
 
